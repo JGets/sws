@@ -60,17 +60,29 @@ func ParseParams(r *http.Request) map[string]string
 ````
 Attempts to parse the form parameters of the given request object into an easy to use map. If a paremeter has multiple values, only the first is populated into the map.
 
+####func DefaultNotFound
+````
+func DefaultNotFound(w http.ResponseWriter, r *http.Request)
+````
+A simple handler function for when resources are not found. Sends a plaintext "404 Not Found" response with appropriate headers.
+
+####func DefaultInternalError
+````
+func DefaultInternalError(w http.ResponseWriter, r *http.Request, err error)
+````
+A simple handler function for when an error occurs in the server. Sends a plaintext "500 Internal Server Error" along with the result of `err.Error()` response, along with the appropriate headers.
+
 
 ###Types
 
 ####SimpleWebServer
 ````
 type SimpleWebServer struct {
-	Handler *RegexpHandler
-	NotFoundHandler func (http.ResponseWriter, *http.Request)
-	InternalErrorHandler func(http.ResponseWriter, *http.Request, error)
-	StaticDir string
-	StaticFileCacheParam string
+	NotFoundHandler func (http.ResponseWriter, *http.Request)	//A function to handle when resources are not found
+	InternalErrorHandler func(http.ResponseWriter, *http.Request, error)	//A function to handle internal server errors
+	StaticDir string	//The path to the directory from which static files are to be served
+	StaticFileCacheParam string	//The value which is to be set for the header's 'Cache-Control:' parameter for static files
+	//contains unexported fields
 }
 ````
 
@@ -84,4 +96,25 @@ Instantiates and returns a pointer to a new `SimpleWebServer` object with all th
 ````
 func (s *SimpleWebServer) Handle(pattern string, handler http.Handler)
 ````
+Adds a route to the server's `Router` to handle the given `patern` using the given `handler`.
+
+####func (*SimpleWebServer) HandleFunc
+````
+func (s *SimpleWebServer) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
+````
+Adds a route to the server's `Router` to handle the given `patern` using the given `handler` function.
+
+####func (*SimpleWebServer) Run
+````
+func (s *SimpleWebServer) Run(addr string) error
+````
+Runs the server on the TCP network address `addr`
+
+####func (*SimpleWebServer) SetStaticFileCacheMaxAge
+````
+func (s *SimpleWebServer) SetStaticFileCacheMaxAge(age int)
+````
+A convenience method to set the `StaticFileCacheParam` of the server to a maximum age of `age`, in seconds
+
+
 
