@@ -12,7 +12,7 @@ The package is built around the [net/http](http://golang.org/pkg/net/http/) pack
 
 As well, you can specify functions for the server to call when a 404 not found, or a 500 internal error are encountered, allowing for easy implementation of customized error pages.
 
-Additionally, `sws` has built in static file serving. For any request that does not match to a pattern, the server attempts to serve the file from the directory specified in the server's `StaticDir` variable. In the default server, this variable defaults to `static/` in the programs current working directory. Static files are served with a header setting the cache amx age to 1 week.
+Additionally, `sws` has built in static file serving. For any request that does not match to a pattern, the server attempts to serve the file from the directory specified in the server's `StaticDir` variable. In the default server, this variable defaults to `static/` in the programs current working directory. By default, static files are served with a header setting the cache max age to 1 week, however this cache value can be changed by setting the server's `StaticFileCacheParam`, or using the `SetStaticFileCacheMaxAge()` method.
 
 ##Documentation
 
@@ -78,11 +78,15 @@ A simple handler function for when an error occurs in the server. Sends a plaint
 ####SimpleWebServer
 ````
 type SimpleWebServer struct {
-	NotFoundHandler func (http.ResponseWriter, *http.Request)	//A function to handle when resources are not found
-	InternalErrorHandler func(http.ResponseWriter, *http.Request, error)	//A function to handle internal server errors
-	StaticDir string	//The path to the directory from which static files are to be served
-	StaticFileCacheParam string	//The value which is to be set for the header's 'Cache-Control:' parameter for static files
-	//contains unexported fields
+	NotFoundHandler func (http.ResponseWriter, *http.Request)
+		//A function to handle when resources are not found
+	InternalErrorHandler func(http.ResponseWriter, *http.Request, error)
+		//A function to handle internal server errors
+	StaticDir string
+		//The path to the directory from which static files are to be served
+	StaticFileCacheParam string
+		//The value which is to be set for the header's 'Cache-Control:' parameter for static files
+	//contains other unexported fields
 }
 ````
 
