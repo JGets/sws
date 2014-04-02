@@ -79,7 +79,6 @@ func ParseParams(r *http.Request) map[string]string {
 	ret := make(map[string]string)
 
 	for k, v := range r.Form {
-
 		if v != nil && len(v) > 0 {
 			ret[k] = v[0]
 		} else {
@@ -172,44 +171,37 @@ func (s *SimpleWebServer) SetStaticFileCacheMaxAge(age int) {
 	Attempts to serve a static file that matches the request.
 */
 func (s *SimpleWebServer) attemptToServeStaticFile(w http.ResponseWriter, r *http.Request) {
-
+	//create a path string for where the file should be
 	filePath := path.Join(s.StaticDir, r.URL.Path)
 
-	if s.fileExists(filePath){
+	if s.fileExists(filePath){	//if the file exists:
 
-		// fmt.Printf("Serving static file: %v\n", filePath);
-		fmt.Printf("Attempting to serve static file: %v\n", r.URL.Path)
+		//fmt.Printf("Attempting to serve static file: %v\n", r.URL.Path)
 
-
+		//set the cache header field
 		w.Header().Set("Cache-Control", s.StaticFileCacheParam)
-
+		//serve the file
 		http.ServeFile(w, r, filePath)
 
-	} else {
+	} else {	//if the file doesn't exist
 
-		fmt.Printf("File Not Found: %v\n", r.URL.Path)
-		//http.NotFound(w, r)
+		// fmt.Printf("File Not Found: %v\n", r.URL.Path)
+
+		//call the server's not found handler
 		s.NotFoundHandler(w, r)
-
 	}
-	
 }
 
 /*
 	determines if the file at filePath exists
 */
 func (s *SimpleWebServer) fileExists(filePath string) bool {
-
 	info, err := os.Stat(filePath)
 	if err != nil {
 		return false;
 	}
-
 	return !info.IsDir()
 }
-
-
-
 
 
 
@@ -235,12 +227,10 @@ func newRegexpRouter() *regexpRouter {
 	Adds a new route to the regexpRouter for the given pattern and Handler
 */
 func (h *regexpRouter) Handle(pattern string, handler http.Handler){
-
 	rpat, err := regexp.Compile(pattern)
 	if err != nil {
 		panic(err)
 	}
-
 	h.routes = append(h.routes, &route{rpat, handler})
 }
 
@@ -248,13 +238,10 @@ func (h *regexpRouter) Handle(pattern string, handler http.Handler){
 	Adds a new route to the regexpRouter for the given pattern and handler function
 */
 func (h *regexpRouter) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request) ){
-
 	rpat, err := regexp.Compile(pattern)
 	if err != nil {
 		panic(err)
 	}
-
-
 	h.routes = append(h.routes, &route{rpat, http.HandlerFunc(handler)})
 }
 
@@ -262,25 +249,19 @@ func (h *regexpRouter) HandleFunc(pattern string, handler func(http.ResponseWrit
 	Attempts to find a matching route for the request. If no route matches, and the router's Server is non-nil, it attempts to serve a static file from the Server, otherwise it serves a basic plaintext 404.
 */
 func (h *regexpRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	//iterate through all the routes, looking for a match
     for _, route := range h.routes {
         if route.pattern.MatchString(r.URL.Path) {
             route.handler.ServeHTTP(w, r)
             return
         }
     }
-
-    
+    //if the request doesn't match one of the registerd routes,
     if h.Server != nil {
-    	//if the router has a pointer to a server, attempt to serve a static file for the request
+    	//and if the router has a pointer to a server, attempt to serve a static file for the request
 	    h.Server.attemptToServeStaticFile(w, r);
     } else {
     	//otherwise, just serve a basic plaintext 404
     	DefaultNotFound(w, r)
     }
-
 }
-
-
-
-
-
