@@ -155,8 +155,13 @@ func (s *SimpleWebServer) HandleFunc(pattern string, handler func(http.ResponseW
 	Runs the server on the TCP network address addr
 */
 func (s *SimpleWebServer) Run(addr string) error {
-	http.Handle("/", s.router)
-	err := http.ListenAndServe(addr, nil)
+
+	mux := http.NewServeMux()
+
+	mux.Handle("/", s.router)
+
+	// http.Handle("/", s.router)
+	err := http.ListenAndServe(addr, mux)
 	return err
 }
 
@@ -174,9 +179,12 @@ func (s *SimpleWebServer) attemptToServeStaticFile(w http.ResponseWriter, r *htt
 	//create a path string for where the file should be
 	filePath := path.Join(s.StaticDir, r.URL.Path)
 
+	// fmt.Printf("attempting to serve file from: %v\n", filePath)
+
 	if s.fileExists(filePath){	//if the file exists:
 
-		//fmt.Printf("Attempting to serve static file: %v\n", r.URL.Path)
+		// fmt.Printf("Attempting to serve static file: %v\n", r.URL.Path)
+
 
 		//set the cache header field
 		w.Header().Set("Cache-Control", s.StaticFileCacheParam)
